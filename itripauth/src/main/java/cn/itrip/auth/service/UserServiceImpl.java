@@ -173,6 +173,10 @@ public class UserServiceImpl implements UserService {
 			}
 		return false;
 	}
+	@Override
+	public void itripCreateUser(ItripUser user) throws Exception {
+		itripUserMapper.insertItripUser(user);
+	}
 
 	
 

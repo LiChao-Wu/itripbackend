@@ -13,7 +13,7 @@ import cn.itrip.beans.pojo.ItripUser;
 public interface UserService {
 
 	public void itriptxCreateUser(ItripUser user) throws Exception;
-
+	public void itripCreateUser(ItripUser user) throws Exception;
 	public void updateUser(ItripUser user) throws Exception;
 
 	public void deleteUser(Long userId) throws Exception;
