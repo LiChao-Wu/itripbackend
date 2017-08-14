@@ -15,8 +15,8 @@
         <property name="mchID" value="11473623"/>
         <property name="key" value="2ab9071b06b9f739b950ddb41db2690d"/>
         <property name="notifyUrl" value="http://itrip.project.bdqn.cn/trade/api/wxpay/notify"/>
-        <property name="successUrl" value="/success.jsp"/>
-        <property name="failUrl" value="/failure.jsp"/>
+        <property name="successUrl" value="http://itrip.project.bdqn.cn/index.html#/orderpaystate?orderNo=%s&amp;id=%s"/>
+        <property name="failUrl" value="http://itrip.project.bdqn.cn/index.html#/orderpaystate?orderNo=%s&amp;id=%s&amp;state=0"/>
     </bean>
 
 </beans>

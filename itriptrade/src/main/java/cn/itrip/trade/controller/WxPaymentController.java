@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashMap;
@@ -46,16 +47,17 @@ public class WxPaymentController {
             response = String.class,
             notes = "客户端提交订单支付请求，对该API的返回结果不用处理，浏览器将自动跳转至微信支付二维码页面。<br><b>请使用普通表单提交，不能使用ajax异步提交。</b>")
     @RequestMapping(value = "/createqccode/{orderNo}", method = RequestMethod.GET)
-    public String createQcCode(@PathVariable String orderNo, ModelMap model) {
+    @ResponseBody
+    public Dto createQcCode(@PathVariable String orderNo, HttpServletResponse response) {
         ItripHotelOrder order = null;
         HashMap<String, String> data = new HashMap<String, String>();
+        HashMap<String, Object> result = new HashMap<String, Object>();
         WXPayRequest wxPayRequest = new WXPayRequest(this.wxPayConfig);
         try {
             order = orderService.loadItripHotelOrder(orderNo);
-            model.addAttribute("hotelName", order.getHotelName());
-            model.addAttribute("roomId", order.getRoomId());
-            model.addAttribute("count", order.getCount());
-            model.addAttribute("payAmount", order.getPayAmount());
+            if (order == null || order.getOrderStatus() != 0) {
+                return DtoUtil.returnFail("订单状态异常", "110001");
+            }
             data.put("body", "爱旅行项目订单支付");
             data.put("out_trade_no", orderNo);
             data.put("device_info", "");
@@ -63,25 +65,25 @@ public class WxPaymentController {
             data.put("spbill_create_ip", "47.92.146.135");
             data.put("notify_url", "http://itrip.project.bdqn.cn/trade/api/wxpay/notify");
             Map<String, String> r = wxPayRequest.unifiedorder(data);
-            return dealResult(r, model);
+            String resultCode = r.get("result_code");
+            if (resultCode.equals("SUCCESS")) {
+                result.put("hotelName", order.getHotelName());
+                result.put("roomId", order.getRoomId());
+                result.put("count", order.getCount());
+                result.put("payAmount", order.getPayAmount());
+                result.put("codeUrl", r.get("code_url"));
+                return DtoUtil.returnDataSuccess(result);
+            } else {
+                logger.info(r.get("return_msg"));
+                return DtoUtil.returnFail("订单支付异常", "110002");
+            }
         } catch (Exception e) {
             e.printStackTrace();
-            return "payError";
+            return DtoUtil.returnFail("订单运行异常", "110003");
         }
     }
-
-    public String dealResult(Map<String, String> r, ModelMap model) {
-        String resultCode = r.get("result_code");
-        String codeUrl = r.get("code_url");
-        model.put("codeUrl", codeUrl);
-        if (resultCode.equals("SUCCESS")) {
-            return "payQcCode";
-        } else {
-            return "payError";
-        }
-    }
-
-    /***ww
+    /***
+     * ww
      * 微信支付轮询订单，查看订单是否支付成功
      *
      * @param orderNo
@@ -144,25 +146,5 @@ public class WxPaymentController {
             e.printStackTrace();
         }
         return result;
-    }
-
-    /***
-     * 将请求的map转化为param
-     *
-     * @param requestParams
-     * @return
-     */
-    public Map<String, String> switchMap(Map<String, String[]> requestParams) {
-        Map<String, String> params = new HashMap<String, String>();
-        for (Iterator iter = requestParams.keySet().iterator(); iter.hasNext(); ) {
-            String name = (String) iter.next();
-            String[] values = (String[]) requestParams.get(name);
-            String valueStr = "";
-            for (int i = 0; i < values.length; i++) {
-                valueStr = (i == values.length - 1) ? valueStr + values[i] : valueStr + values[i] + ",";
-            }
-            params.put(name, valueStr);
-        }
-        return params;
     }
 }

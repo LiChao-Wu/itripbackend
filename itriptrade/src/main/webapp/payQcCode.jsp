@@ -217,7 +217,7 @@
                 url: "${pageContext.request.contextPath}/api/wxpay/queryorderstatus/${orderNo}",
                 success: function (result) {
                    if(result.success=='true' && result.data.orderStatus==2){
-                        window.location.href="${pageContext.request.contextPath}/success.jsp";
+                        window.location.href='${successUrl}';
                    }
                 }
             });
