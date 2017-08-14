@@ -167,39 +167,9 @@
     <h1>确认订单信息</h1>
 </header>
 <div id="main">
-    <form name=alipayment action='../pay' method="post">
-        <div id="body" style="clear:left">
-            <dl class="content">
-                <dt>订单编号：</dt>
-                <dd>
-                    ${orderNo}
-                    <input type="hidden" name="WIDout_trade_no" value="${orderNo}">
-                    <input type="hidden" name="WIDsubject" value="${hotelName}">
-                    <input type="hidden" name="WIDtotal_amount" value="${payAmount}">
-                </dd>
-                <hr class="one_line">
-                <dt>酒店名称：</dt>
-                <dd>
-                    ${hotelName}
-                </dd>
-                <hr class="one_line">
-                <dt>付款金额：</dt>
-                <dd>
-                    ￥${payAmount}
-                </dd>
-                <hr class="one_line"/>
-                <dt>订房描述：</dt>
-                <dd>
-                    房间ID：${roomId},数量：${count}
-                </dd>
-                <hr class="one_line">
-                <dt></dt>
-                <dd id="btn-dd">
+    <dd id="btn-dd">
 
-                </dd>
-            </dl>
-        </div>
-    </form>
+    </dd>
     <div id="foot">
         <ul class="foot-ul">
             <li>
@@ -209,20 +179,31 @@
     </div>
 </div>
 <script>
-    var code = new QRCode(document.getElementById('btn-dd'), '${codeUrl}');
-    function queryOrderIsSuccess() {
-        $(document).ready(function () {
-            $.ajax({
-                type: "GET",
-                url: "${pageContext.request.contextPath}/api/wxpay/queryorderstatus/${orderNo}",
-                success: function (result) {
-                   if(result.success=='true' && result.data.orderStatus==2){
-                        window.location.href='${successUrl}';
-                   }
+    function loadQRCode() {
+        $.ajax({
+            type: "GET",
+            url: "${pageContext.request.contextPath}/api/wxpay/createqccode/D10000012017062714113333333",
+            success: function (result) {
+                if (result.success == 'true') {
+                    var code = new QRCode(document.getElementById('btn-dd'), result.data.codeUrl);
+                } else {
+                    alert(result.msg);
                 }
-            });
+            }
         });
     }
+    function queryOrderIsSuccess() {
+        $.ajax({
+            type: "GET",
+            url: "${pageContext.request.contextPath}/api/wxpay/queryorderstatus/D10000012017062714113333333",
+            success: function (result) {
+                if (result.success == 'true' && result.data.orderStatus == 2) {
+                    window.location.href = 'http://www.baidu.com';
+                }
+            }
+        });
+    }
+    loadQRCode();
     setInterval('queryOrderIsSuccess()', 500);//轮询执行，500ms一次
 </script>
 </body>

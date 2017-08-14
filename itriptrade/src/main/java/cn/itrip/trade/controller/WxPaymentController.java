@@ -42,7 +42,7 @@ public class WxPaymentController {
     @Autowired
     private WXPayConfig wxPayConfig;
 
-    @ApiOperation(value = "订单微信支付", httpMethod = "POST",
+    @ApiOperation(value = "订单微信支付", httpMethod = "GET",
             protocols = "HTTP", produces = "application/xml", consumes = "application/x-www-form-urlencoded",
             response = String.class,
             notes = "客户端提交订单支付请求，对该API的返回结果不用处理，浏览器将自动跳转至微信支付二维码页面。<br><b>请使用普通表单提交，不能使用ajax异步提交。</b>")
