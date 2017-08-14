@@ -120,7 +120,7 @@ public class HotelRoomController {
             param.put("isTimelyResponse", vo.getIsTimelyResponse());
             param.put("roomBedTypeId", vo.getRoomBedTypeId());
             param.put("isCancel", vo.getIsCancel());
-            param.put("payType", vo.getPayType());
+            param.put("payType", vo.getPayType()==3?null:vo.getPayType());
 
             List<ItripHotelRoomVO> originalRoomList = itripHotelRoomService.getItripHotelRoomListByMap(param);
             hotelRoomVOList = new ArrayList();

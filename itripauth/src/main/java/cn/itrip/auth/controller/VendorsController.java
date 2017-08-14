@@ -32,8 +32,10 @@ import cn.itrip.auth.service.UserService;
 import cn.itrip.beans.dto.Dto;
 import cn.itrip.beans.pojo.ItripUser;
 import cn.itrip.beans.vo.ItripTokenVO;
+import cn.itrip.beans.vo.ItripWechatTokenVO;
 import cn.itrip.common.DtoUtil;
 import cn.itrip.common.ErrorCode;
+import cn.itrip.common.UrlUtils;
 
 import com.alibaba.fastjson.JSON;
 
@@ -77,7 +79,7 @@ public class VendorsController {
 		String accessTokenUrl="https://api.weixin.qq.com/sns/oauth2/access_token?appid=wx9168f76f000a0d4c&secret=8ba69d5639242c3bd3a69dffe84336c1&code="+
 				code+"&grant_type=authorization_code";	
 		response.setContentType("text/html;charset=utf-8");
-		String json=loadURL(accessTokenUrl);
+		String json=UrlUtils.loadURL(accessTokenUrl);
 		Map<String,Object> wechatToken=JSON.parseObject(json, Map.class);
 		
 		try {
@@ -109,11 +111,11 @@ public class VendorsController {
 			//返回前端处理
 			StringBuilder loginPage=new StringBuilder();
 			loginPage.append("http://itrip.project.bdqn.cn/#/login");
-			loginPage.append("?token="+token);
+			loginPage.append("?user_type=1&token="+token);
 			loginPage.append("&access_token="+wechatToken.get("access_token").toString());
 			loginPage.append("&expires_in="+wechatToken.get("expires_in").toString());
 			loginPage.append("&refresh_token="+wechatToken.get("refresh_token").toString());
-			loginPage.append("&openid="+wechatToken.get("openid").toString());
+			loginPage.append("&openid="+wechatToken.get("openid").toString());			
 			response.sendRedirect(loginPage.toString());
 			
 		} catch (Exception e1) {
@@ -141,7 +143,7 @@ public class VendorsController {
 			@RequestParam String openid){
 		try {
 			//加载用户信息
-			String userInfoJson=loadURL("https://api.weixin.qq.com/sns/userinfo?access_token="
+			String userInfoJson=UrlUtils.loadURL("https://api.weixin.qq.com/sns/userinfo?access_token="
 					+accessToken
 					+"&openid="+ openid
 					);
@@ -186,21 +188,22 @@ public class VendorsController {
 			//2、保持和wechat的会话
 			String refreshTokenUrl="https://api.weixin.qq.com/sns/oauth2/refresh_token?appid=wx9168f76f000a0d4c&grant_type=refresh_token&refresh_token="+refreshToken.trim();
 			
-			String json=loadURL(refreshTokenUrl);			
+			String json=UrlUtils.loadURL(refreshTokenUrl);			
 			Map<String,Object> wechatToken=JSON.parseObject(json, Map.class);
 			if(null!=wechatToken.get("errcode")){
 				return DtoUtil.returnFail(wechatToken.get("errmsg").toString(), ErrorCode.AUTH_REPLACEMENT_FAILED);
 			}
-			response.setHeader("access_token", wechatToken.get("access_token").toString());
-			response.setHeader("expires_in", wechatToken.get("expires_in").toString());
-			response.setHeader("refresh_token", wechatToken.get("refresh_token").toString());
-			response.setHeader("openid", wechatToken.get("openid").toString());
-			
-			//返回ItripTokenVO
-			ItripTokenVO tokenVO=new ItripTokenVO(newToken,
+				
+			//返回ItripWechatTokenVO (整合了本地会话与微信会话)
+			ItripWechatTokenVO wechatTokenVO=new ItripWechatTokenVO(newToken,
 					Calendar.getInstance().getTimeInMillis()+TokenService.SESSION_TIMEOUT*1000,//2h有效期
-					Calendar.getInstance().getTimeInMillis());			
-			return DtoUtil.returnDataSuccess(tokenVO);
+					Calendar.getInstance().getTimeInMillis());
+			wechatTokenVO.setAccessToken(wechatToken.get("access_token").toString());
+			wechatTokenVO.setExpiresIn(wechatToken.get("expires_in").toString());
+			wechatTokenVO.setRefreshToken(wechatToken.get("refresh_token").toString());
+			wechatTokenVO.setOpenid(wechatToken.get("openid").toString());		
+			return DtoUtil.returnDataSuccess(wechatTokenVO);
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 			return DtoUtil.returnFail(e.getMessage(), ErrorCode.AUTH_REPLACEMENT_FAILED);
@@ -208,42 +211,7 @@ public class VendorsController {
 		
 	}
 	
-	private String loadURL(String urlStr){
-		try{  
-	        URL url = new URL(urlStr);  
-	        HttpURLConnection urlConnection = (HttpURLConnection)url.openConnection();	              
-	        urlConnection.setRequestMethod("GET");  
-		    urlConnection.connect(); 	          
-		    InputStream inputStream = urlConnection.getInputStream(); 
-		    String responseStr = ConvertToString(inputStream);  
-		    return responseStr;
-		}catch(IOException e){  
-		    e.printStackTrace(); 
-		    return null;
-		}
-	}
-	private String ConvertToString(InputStream inputStream){  
-	    InputStreamReader inputStreamReader = new InputStreamReader(inputStream);  
-	    BufferedReader bufferedReader = new BufferedReader(inputStreamReader);  
-	    StringBuilder result = new StringBuilder();  
-	    String line = null;  
-	    try {  
-	        while((line = bufferedReader.readLine()) != null){  
-	            result.append(line + "\n");  
-	        }  
-	    } catch (IOException e) {  
-	        e.printStackTrace();  
-	    } finally {  
-	        try{  
-	            inputStreamReader.close();  
-	            inputStream.close();  
-	            bufferedReader.close();  
-	        }catch(IOException e){  
-	            e.printStackTrace();  
-	        }  
-	    }  
-	    return result.toString();  
-	}  
+	
 	
 	
 }
