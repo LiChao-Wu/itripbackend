@@ -85,8 +85,7 @@ public class OrderServiceImpl implements OrderService {
 	public boolean processed(String orderNo) throws Exception {
 		// TODO Auto-generated method stub
 		ItripHotelOrder itripHotelOrder=this.loadItripHotelOrder(orderNo);
-		return itripHotelOrder.getOrderStatus().equals(2)&&
-				!EmptyUtils.isEmpty(itripHotelOrder.getTradeNo());
+		return itripHotelOrder.getOrderStatus().equals(2)&&!EmptyUtils.isEmpty(itripHotelOrder.getTradeNo());
 	}
 	
 	 /**

@@ -81,6 +81,6 @@ public class WXPayRequest {
     }
 
     public boolean isResponseSignatureValid(Map<String, String> param) throws Exception {
-        return WXPayUtil.isSignatureValid(param, this.config.getKey(), WXPayConstants.SignType.MD5);
+        return WXPayUtil.isSignatureValid(param, this.config.getKey(), WXPayConstants.SignType.HMACSHA256);
     }
 }
