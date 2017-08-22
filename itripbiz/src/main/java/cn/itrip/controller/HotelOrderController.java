@@ -375,7 +375,7 @@ public class HotelOrderController {
     /***
      * 10分钟执行一次 刷新订单的状态 不对外公布
      */
-    @Scheduled(cron = "*/600 * * * * ?")
+    @Scheduled(cron = "*0 0/10 * * * ?")
     public void flushCancelOrderStatus() {
         try {
             boolean flag = itripHotelOrderService.flushOrderStatus(1);
@@ -386,9 +386,9 @@ public class HotelOrderController {
     }
 
     /***
-     * 100分钟执行一次 刷新订单的状态 不对外公布
+     * 2小时执行一次 刷新订单的状态 不对外公布
      */
-    @Scheduled(cron = "*/6000 * * * * ?")
+    @Scheduled(cron = "0 0 0/2 * * ?")
     public void flushOrderStatus() {
         try {
             logger.info("刷单程序开始执行.......");
