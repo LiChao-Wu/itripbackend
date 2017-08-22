@@ -89,6 +89,10 @@ public class WxPaymentController {
      * @param orderNo
      * @return
      */
+    @ApiOperation(value = "订单微信支付刷单程序", httpMethod = "GET",
+            protocols = "HTTP", produces = "application/xml", consumes = "application/x-www-form-urlencoded",
+            response = String.class,
+            notes = "前端用户检测订单是否成功的接口<br>如果订单状态为2则代表订单支付成功<b></b>")
     @RequestMapping(value = "/queryorderstatus/{orderNo}", method = RequestMethod.GET)
     @ResponseBody
     public Dto<ItripHotelOrder> queryOrderIsSuccess(@PathVariable String orderNo) {
